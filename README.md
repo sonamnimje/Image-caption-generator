@@ -1,26 +1,69 @@
-# AI Image Caption Generator
+# 🖼️ AI Image Caption Generator 📷✨
 
-This is a web application that generates captions for images using AI. It uses the Hugging Face Transformers library with a pre-trained Vision Encoder-Decoder model to generate descriptive captions for uploaded images.
+![Python](https://img.shields.io/badge/Python-3.7%2B-blue.svg)
+![Flask](https://img.shields.io/badge/Flask-2.0.1-lightgrey)
+![License](https://img.shields.io/badge/License-MIT-green)
+![HuggingFace](https://img.shields.io/badge/Model-vitagpt2-yellow)
 
-## Features
+A web app that uses a powerful AI model to generate captions for images you upload — enhanced with emojis and Instagram-friendly formatting!
 
-- Drag and drop image upload
-- Real-time image preview
-- AI-powered caption generation
-- Modern and responsive UI
-- Error handling and loading states
+---
 
-## Prerequisites
+## 🚀 Features
 
-- Python 3.7 or higher
-- pip (Python package installer)
+- 📤 Drag & Drop or click-to-upload image interface
+- 🤖 AI-generated captions using ViT-GPT2 from Hugging Face
+- 😀 Emojis based on detected objects
+- 📱 Instagram-style captions with fun phrases and hashtags
+- ⚡ Responsive, minimal, and fast
 
-## Installation
+ ---
 
-1. Clone this repository:
+## 🧠 How It Works
+
+1.The app uses a pretrained ViT-GPT2 model to generate descriptive captions from images.
+
+2.Emojis are intelligently added based on keywords found in the caption.
+
+3.Instagram-friendly formatting adds fun phrases and trending hashtags.
+
+-----
+
+## 📝 Example
+
+**Input Image:** 🐶 dog on the beach
+
+**Generated Caption:**
+
+🐶 A dog playing on the beach.
+
+Too good not to share!
+
+#InstaGood #PhotoOfTheDay #beach #dog #dogsofinstagram #sunnydays
+
+----
+
+## 🧰 Tech Stack
+
+- **Backend**: Python, Flask
+- **AI Model**: `nlpconnect/vit-gpt2-image-captioning` (via Hugging Face Transformers)
+- **Frontend**: HTML, CSS (Tailwind CSS), JavaScript
+- **Image Processing**: Pillow
+
+---
+
+## 🛠️ Installation
+
+### 🔗 Prerequisites
+- Python 3.7+
+- pip (Python package manager)
+
+### 📥 Clone the Repository
+
 ```bash
-git clone <repository-url>
+git clone https://github.com/sonamnimje/image-caption-generator.git
 cd image-caption-generator
+
 ```
 
 2. Create a virtual environment (recommended):
@@ -62,3 +105,5 @@ http://localhost:5000
 ## Note
 
 The first time you run the application, it will download the pre-trained model which might take a few minutes depending on your internet connection. 
+
+
