@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Image Caption Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            min-height: 100vh;
+            background: linear-gradient(120deg, #f8e1f4 0%, #c7e9fb 50%, #f9f6e7 100%);
+            background-size: 200% 200%;
+            animation: gradientMove 8s ease-in-out infinite;
+            position: relative;
+        }
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle at 60% 40%, rgba(255, 182, 193, 0.12) 0%, transparent 60%),
+                        radial-gradient(circle at 20% 80%, rgba(173, 216, 230, 0.13) 0%, transparent 70%),
+                        radial-gradient(circle at 80% 70%, rgba(255, 255, 224, 0.10) 0%, transparent 70%);
+            z-index: 0;
+            pointer-events: none;
+            filter: blur(2px);
+        }
+        .main-container {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1.5px solid rgba(200, 200, 255, 0.18);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.12);
+            backdrop-filter: blur(18px);
+            border-radius: 1.5rem;
+            z-index: 1;
+        }
+        .drop-zone {
+            border: 2px dashed #7dd3fc;
+            background: rgba(255, 255, 255, 0.85);
+            transition: all 0.3s cubic-bezier(.4,2,.6,1);
+            backdrop-filter: blur(8px);
+        }
+        .drop-zone:hover {
+            border-color: #38bdf8;
+            background: rgba(255, 255, 255, 0.95);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 6px 16px -2px rgba(56, 189, 248, 0.10);
+        }
+        .title-text {
+            background: linear-gradient(90deg, #f472b6 0%, #60a5fa 60%, #facc15 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.07);
+        }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto px-4 py-12 flex flex-col items-center justify-center min-h-screen">
+        <h1 class="text-5xl font-extrabold text-center mb-10 title-text drop-shadow-lg">AI Image Caption Generator</h1>
+        <div class="max-w-2xl w-full main-container rounded-3xl shadow-2xl p-8">
+            <div id="drop-zone" class="drop-zone rounded-2xl p-10 text-center cursor-pointer mb-8 border-2 border-dashed">
+                <div class="space-y-4">
+                    <svg class="mx-auto h-14 w-14 text-blue-300" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <div class="text-blue-500">
+                        <p class="text-lg font-medium">Drag and drop your image here</p>
+                        <p class="text-sm text-blue-400">or</p>
+                        <button class="mt-2 px-5 py-2 bg-gradient-to-r from-pink-400 via-blue-400 to-yellow-300 text-white rounded-lg shadow hover:from-pink-500 hover:to-yellow-400 transition-colors font-semibold">
+                            Browse Files
+                        </button>
+                    </div>
+                </div>
+                <input type="file" id="file-input" class="hidden" accept="image/*">
+            </div>
+            <div id="preview-container" class="hidden mb-8">
+                <img id="image-preview" class="max-w-full h-auto rounded-xl shadow-lg border border-blue-100" src="" alt="Preview">
+            </div>
+            <div id="caption-container" class="hidden">
+                <h2 class="text-2xl font-semibold text-blue-700 mb-3">Generated Caption:</h2>
+                <p id="caption-text" class="text-lg text-blue-700 bg-blue-50 p-5 rounded-xl shadow-inner"></p>
+            </div>
+            <div id="loading" class="hidden text-center py-6">
+                <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-blue-400 border-t-transparent"></div>
+                <p class="mt-3 text-blue-500 font-medium">Generating caption...</p>
+            </div>
+            <div id="error" class="hidden text-red-500 text-center mt-6 font-semibold"></div>
+        </div>
+    </div>
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const previewContainer = document.getElementById('preview-container');
+        const imagePreview = document.getElementById('image-preview');
+        const captionContainer = document.getElementById('caption-container');
+        const captionText = document.getElementById('caption-text');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+
+        // Handle drag and drop
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('border-blue-500');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('border-blue-500');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-blue-500');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                handleImage(file);
+            }
+        });
+
+        // Handle file input
+        dropZone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                handleImage(file);
+            }
+        });
+
+        function handleImage(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imagePreview.src = e.target.result;
+                previewContainer.classList.remove('hidden');
+                captionContainer.classList.add('hidden');
+                error.classList.add('hidden');
+                generateCaption(file);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function generateCaption(file) {
+            loading.classList.remove('hidden');
+            const formData = new FormData();
+            formData.append('image', file);
+
+            fetch('/generate-caption', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                loading.classList.add('hidden');
+                if (data.error) {
+                    error.textContent = data.error;
+                    error.classList.remove('hidden');
+                } else {
+                    captionText.innerHTML = data.caption.replace(/\n/g, '<br>');
+                    captionContainer.classList.remove('hidden');
+                }
+            })
+            .catch(err => {
+                loading.classList.add('hidden');
+                error.textContent = 'An error occurred while generating the caption.';
+                error.classList.remove('hidden');
+            });
+        }
+    </script>
+</body>
+</html> 
