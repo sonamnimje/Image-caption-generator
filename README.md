@@ -106,4 +106,6 @@ http://localhost:5000
 
 The first time you run the application, it will download the pre-trained model which might take a few minutes depending on your internet connection. 
 
+## 📸 Screenshot
 
+![Description of Screenshot](image/image-caption-generator-ui.png.png)
